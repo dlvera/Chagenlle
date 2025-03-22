@@ -11,7 +11,7 @@ class TagBase(BaseModel):
 # Esquemas para creación
 class TagCreate(BaseModel):
     name: str
-    # posts: Optional[List[int]] = None  # Lista de IDs de post
+    posts:list
     
 class TagCreateResponse(TagBase):
     id: int
@@ -25,7 +25,10 @@ class TagRead(TagBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    # posts: List[PostRead] = []
+    # post: list["PostRead"]
+    if TYPE_CHECKING:
+        from .post import PostRead
+        posts: list["PostRead"] = [] 
     model_config = ConfigDict(from_attributes=True)
 
 if TYPE_CHECKING:

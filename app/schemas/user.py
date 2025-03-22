@@ -50,14 +50,11 @@ class UserResponse(BaseModel):
 class UserRead(UserBase):
     id: int
     created_at: datetime
-    # posts: List["PostRead"] =[]
+    posts: list["PostRead"] =[]
     comments: list["CommentRead"] = []  
     model_config = ConfigDict(from_attributes=True, 
     exclude={"password_hash"} 
 )
-class UserReadWithPosts(UserRead):
-    posts: List["PostRead"] = []
-    model_config = ConfigDict(from_attributes=True)
 
 if TYPE_CHECKING:
     from .post import PostRead  # ✅

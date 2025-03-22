@@ -27,7 +27,7 @@ class PostRead(PostBase):
     user_id: int
     user: "UserRead"  # ✅
     comments: list["CommentRead"]  # ✅
-    tags: list[TagRead]
+    tags: list["TagRead"]
     model_config = ConfigDict(from_attributes=True)
     
 if TYPE_CHECKING:

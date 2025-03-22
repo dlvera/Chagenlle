@@ -5,6 +5,7 @@ from typing import List
 from app.models.post import Post
 from app.models.tag import Tag
 from app.models.user import User
+from app.models.comment import Comment
 from app.schemas.post import PostCreate, PostCreateResponse, PostRead 
 from app.utils.security import get_current_user, get_db
 from sqlalchemy.orm import selectinload
@@ -56,13 +57,14 @@ async def create_post(
         await db.commit()
         
         # Refrescar el objeto con las relaciones
-        await db.refresh(new_post)
-        await db.execute(
-            select(Post)
-            .where(Post.id == new_post.id)
-            .options(selectinload(Post.tags))
-        )
-        
+        # await db.refresh(new_post)
+        # await db.execute(
+        #     select(Post)
+        #     .where(Post.id == new_post.id)
+        #     .options(selectinload(Post.tags))
+        # )
+        await db.refresh(new_post, ["tags", "user"])
+
         return new_post
         
     except Exception as e:
@@ -127,8 +129,9 @@ async def update_post(
             .where(Post.id == db_post.id)
             .options(
                 selectinload(Post.tags),
-                selectinload(Post.user)
-            )
+                selectinload(Post.user),
+                selectinload(Post.comments).selectinload(Comment.user)  # ✅
+)
         )
         return result.scalars().first()
         
@@ -189,9 +192,12 @@ async def read_posts(
 async def read_post(post_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Post)
-        .where(Post.deleted_at == None)  # Filtra posts no eliminados
-        .options(selectinload(Post.tags), 
-                 selectinload(Post.user))  # Cargar relaciones
+        .where(Post.id == post_id, Post.deleted_at == None)
+        .options(
+            selectinload(Post.tags),
+            selectinload(Post.user),
+            selectinload(Post.comments).selectinload(Comment.user)  # ✅
+            )
     )
     post = result.scalars().first()
     if not post:

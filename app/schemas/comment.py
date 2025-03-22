@@ -21,8 +21,8 @@ class CommentRead(CommentBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    user: Optional["UserRead"]  
-    post: Optional["PostRead"]  
+    user: "UserRead"  
+    post: "PostRead"  
     model_config = ConfigDict(from_attributes=True)
 
 if TYPE_CHECKING:

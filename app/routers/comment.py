@@ -173,9 +173,11 @@ async def read_comments(
         .offset(skip)
         .limit(limit)
         .options(
-            selectinload(Comment.user),  # Usuario del comentario
-            selectinload(Comment.post).selectinload(Post.user),  # Post + su usuario
-        )
+            selectinload(Comment.user),
+            selectinload(Comment.post)
+                .selectinload(Post.user)
+                .selectinload(Post.tags),  # ✅ Cargar tags del post
+)
     )
     comments = result.scalars().unique().all()
     return comments
