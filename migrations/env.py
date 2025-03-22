@@ -2,7 +2,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 import asyncio
-from app.models import Base  # Asegúrate que esta importación sea correcta
+from app.models.base import Base  # Asegúrate que esta importación sea correcta
 
 # Configuración de Alembic
 config = context.config

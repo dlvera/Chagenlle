@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import List
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from typing import TYPE_CHECKING, List
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import datetime
-from app.schemas.post import PostRead
+# from app.schemas.post import PostRead
 import re
 
 # Esquemas base comunes
@@ -13,6 +13,7 @@ class UserBase(BaseModel):
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3)
     password: str = Field(..., min_length=10)
+    model_config = ConfigDict(from_attributes=True) 
 
     @field_validator('username')
     def validate_username(cls, value: str) -> str:
@@ -49,10 +50,20 @@ class UserResponse(BaseModel):
 class UserRead(UserBase):
     id: int
     created_at: datetime
-    posts: List[PostRead] = []
-    # comments: List["CommentRead"]
-    model_config = ConfigDict(from_attributes=True) 
-    
+    # posts: List["PostRead"] =[]
+    comments: list["CommentRead"] = []  
+    model_config = ConfigDict(from_attributes=True, 
+    exclude={"password_hash"} 
+)
+class UserReadWithPosts(UserRead):
+    posts: List["PostRead"] = []
+    model_config = ConfigDict(from_attributes=True)
+
+if TYPE_CHECKING:
+    from .post import PostRead  # ✅
+    from .comment import CommentRead  # ✅
+  
+# UserRead.model_rebuild()  
 class Token(BaseModel):
     access_token: str
     token_type: str

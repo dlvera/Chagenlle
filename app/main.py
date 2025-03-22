@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.middleware.log_time import ResponseTimeLogger
-from app.routers import posts, users, auth, tags
+from app.routers import comment, posts, users, auth, tags
 import logging
 
 app = FastAPI(
@@ -16,6 +16,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(posts.router)
 app.include_router(tags.router)
+app.include_router(comment.router)
 app.add_middleware(ResponseTimeLogger)
 
 @app.get("/")
