@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship, declarative_base
 from .base import SoftDeleteQuery, TimestampMixin, SoftDeleteMixin, post_tag, Base
