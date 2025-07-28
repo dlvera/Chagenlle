@@ -68,3 +68,17 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
+    id: int
+
+    class Config:
+        from_attributes = True  # Reemplaza orm_mode en Pydantic v2
+
+class UserRead(UserBase):  # <-- Esta es la clase que falta
+    id: int
+    is_active: bool
+
+class UserInDB(UserBase):
+    id: int
+
+    class Config:
+        from_attributes = True  # Reemplaza orm_mode en Pydantic v2

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship, declarative_base
-from ..utils.auth import get_password_hash, verify_password
+from app.core.utils.auth import get_password_hash, verify_password
 from .base import SoftDeleteQuery, TimestampMixin, SoftDeleteMixin, Base
 
 class User(Base, TimestampMixin, SoftDeleteMixin):

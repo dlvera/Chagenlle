@@ -1,52 +1,27 @@
 from logging.config import fileConfig
-from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
-import asyncio
-from app.models.base import Base  # Asegúrate que esta importación sea correcta
+from alembic import context
+from app.models import Base
+from app.core.config import settings
 
-# Configuración de Alembic
 config = context.config
+fileConfig(config.config_file_name)
 
-# Configurar logging
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
-
-# Metadatos para autogenerate
 target_metadata = Base.metadata
 
-def run_migrations_offline():
-    """Ejecuta migraciones en modo offline (sin conexión a BD)."""
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url,
-        target_metadata=target_metadata,
-        literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
-    )
-    with context.begin_transaction():
-        context.run_migrations()
-
 def run_migrations_online():
-    """Ejecuta migraciones en modo asíncrono."""
-    connectable = create_async_engine(config.get_main_option("sqlalchemy.url"))
+    connectable = create_async_engine(settings.DATABASE_URL)
 
-    async def run_async_migrations():
-        async with connectable.connect() as connection:
-            await connection.run_sync(do_run_migrations)
+    async with connectable.connect() as connection:
+        await connection.run_sync(
+            lambda sync_conn: context.configure(
+                connection=sync_conn,
+                target_metadata=target_metadata,
+                compare_type=True,
+                include_schemas=True
+            )
+        )
 
-    asyncio.run(run_async_migrations())
+        await connection.run_sync(context.run_migrations)
 
-def do_run_migrations(connection):
-    context.configure(
-        connection=connection,
-        target_metadata=target_metadata,
-        compare_type=True,
-    )
-    with context.begin_transaction():
-        context.run_migrations()
-
-# Punto de entrada principal
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+run_migrations_online()

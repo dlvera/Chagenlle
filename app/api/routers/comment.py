@@ -8,7 +8,7 @@ from app.models.post import Post
 from app.models.comment import Comment
 from app.models.tag import Tag
 from app.models.user import User
-from app.utils.security import get_current_user, get_db
+from app.core.utils.security import get_current_user, get_db
 from sqlalchemy.orm import selectinload
 
 router = APIRouter(prefix="/comment", tags=["Comment"])
