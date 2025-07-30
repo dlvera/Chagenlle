@@ -26,14 +26,14 @@ class UserCreate(BaseModel):
     @field_validator('password')
     def validate_password(cls, value: str) -> str:
         errors = []
-        if len(value) < 8:
-            errors.append("La contraseña debe tener al menos 8 caracteres")
+        if len(value) < 10:
+            raise ValueError("La contraseña debe tener al menos 10 caracteres")
         if not re.search(r'[A-Z]', value):
-            errors.append("La contraseña debe contener al menos una mayúscula")
+            raise ValueError("La contraseña debe contener al menos una mayúscula")
         if not re.search(r'[0-9]', value):
-            errors.append("La contraseña debe contener al menos un número")
+            raise ValueError("La contraseña debe contener al menos un número")
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
-            errors.append("La contraseña debe contener al menos un carácter especial")
+            raise ValueError("La contraseña debe contener al menos un carácter especial")
         
         if errors:
             raise ValueError("\n".join(errors))
@@ -73,9 +73,9 @@ class TokenData(BaseModel):
     class Config:
         from_attributes = True  # Reemplaza orm_mode en Pydantic v2
 
-class UserRead(UserBase):  # <-- Esta es la clase que falta
-    id: int
-    is_active: bool
+# class UserRead(UserBase):  # <-- Esta es la clase que falta
+#     id: int
+#     is_active: bool
 
 class UserInDB(UserBase):
     id: int

@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import get_db
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserInDB, UserResponse
 from app.models.user import User
 from sqlalchemy.exc import SQLAlchemyError
+
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -39,3 +41,14 @@ async def register(
             detail="Error creating user",
             headers={"X-Error": "UserCreationFailed"}
         )
+    
+@router.post("/", response_model=UserInDB, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user_data: UserCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    service = UserService(db)
+    try:
+        return await service.create_user(user_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

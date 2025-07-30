@@ -8,6 +8,8 @@ from app.schemas.tag import TagCreate, TagCreateResponse, TagRead
 from app.core.utils.security import get_current_user, get_db
 from sqlalchemy.orm import selectinload
 
+from aiocache import cached
+
 router = APIRouter(prefix="/tags", tags=["Tags"])
 
 @router.post("/", response_model=TagCreateResponse)
@@ -39,3 +41,4 @@ async def read_tags(
     )
     tags = result.scalars().all()
     return tags
+

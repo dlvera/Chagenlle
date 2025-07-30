@@ -8,15 +8,14 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_username(self, username: str) -> User | None:
         result = await self.session.execute(
-            select(User).where(User.email == email))
+            select(User).where(User.username == username))
         return result.scalars().first()
      
     async def create(self, user_data: UserCreate) -> User:
-        hashed_password = get_password_hash(user_data.password)
-        user = User(email=user_data.email, hashed_password=hashed_password)
+        user = User(username=user_data.username)
+        user.set_password(user_data.password)
         self.session.add(user)
         await self.session.commit()
-        await self.session.refresh(user)
         return user

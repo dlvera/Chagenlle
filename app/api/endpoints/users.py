@@ -11,7 +11,11 @@ async def create_user(
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    service = UserService(db)
+    # Usar inyección explícita:
+    async def create_user(
+        user_data: UserCreate,
+        service: UserService = Depends(UserService)
+    ):
     try:
         return await service.create_user(user_data)
     except ValueError as e:

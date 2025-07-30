@@ -11,7 +11,7 @@ class TagBase(BaseModel):
 # Esquemas para creación
 class TagCreate(BaseModel):
     name: str
-    posts:list
+
     
 class TagCreateResponse(TagBase):
     id: int

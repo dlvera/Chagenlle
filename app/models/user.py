@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship, declarative_base
 from app.core.utils.auth import get_password_hash, verify_password
 from .base import SoftDeleteQuery, TimestampMixin, SoftDeleteMixin, Base
+from sqlalchemy import event  
+
 
 class User(Base, TimestampMixin, SoftDeleteMixin):
     __tablename__ = "users"
@@ -21,3 +23,10 @@ class User(Base, TimestampMixin, SoftDeleteMixin):
     # Relaciones
     posts = relationship("Post", back_populates="user")
     comments = relationship("Comment", back_populates="user")
+
+
+# user.py (model)
+@event.listens_for(User, 'before_insert')
+def set_password(self, password: str):
+    from app.core.utils.auth import get_password_hash  # Import local
+    self.password_hash = get_password_hash(password)
