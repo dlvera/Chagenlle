@@ -25,4 +25,4 @@ httpx==0.25.0
 pytest==7.4.3
 pytest-asyncio==0.23.2
 
-aiocache
+aiocache == 0.12.3 

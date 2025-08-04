@@ -1,0 +1,16 @@
+# .dockerignore
+venv/
+.env
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+docker-compose.yml
+Dockerfile
+alembic.ini
+*.log
+*.sqlite
+*.cache

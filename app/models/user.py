@@ -10,7 +10,7 @@ class User(Base, TimestampMixin, SoftDeleteMixin):
     query_class = SoftDeleteQuery
 
     id = Column(Integer, primary_key=True, comment="ID único del usuario")
-    username = Column(String(50), unique=True, nullable=False, comment="Nombre de usuario único")
+    username = Column(String(50), unique=True, nullable=False, index=True, comment="Nombre de usuario único")
     password_hash = Column(String(128), nullable=False, comment="Hash de la contraseña")
 
     # Métodos para contraseña
@@ -24,9 +24,8 @@ class User(Base, TimestampMixin, SoftDeleteMixin):
     posts = relationship("Post", back_populates="user")
     comments = relationship("Comment", back_populates="user")
 
-
-# user.py (model)
 @event.listens_for(User, 'before_insert')
-def set_password(self, password: str):
-    from app.core.utils.auth import get_password_hash  # Import local
-    self.password_hash = get_password_hash(password)
+def hash_password_before_insert(mapper, connection, target):
+    from app.core.utils.auth import get_password_hash
+    if target.password_hash:
+        target.password_hash = get_password_hash(target.password_hash)

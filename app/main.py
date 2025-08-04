@@ -4,9 +4,13 @@ import logging
 
 # Importa settings antes que cualquier otro módulo que lo use
 from app.core.config import settings  # Cambia esta línea
+from app.core.middleware.error_handler import sql_error_handler
 from app.core.middleware.log_time import ResponseTimeLogger
 from app.api.routers import comment, posts, users, auth, tags
 from app.core.database import *
+
+
+from sqlalchemy.exc import SQLAlchemyError
 
 app = FastAPI(
     title="Dariel",
@@ -36,12 +40,21 @@ app.include_router(comment.router)
 # Middleware
 app.add_middleware(ResponseTimeLogger)
 
+app.exception_handler(SQLAlchemyError)(sql_error_handler)
+
 @app.get("/")
 def read_root():
     return {"message": "API funcionando"}
 
-# Configuración de logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(method)s - %(path)s - %(status)d - %(time_ms)s",
-    level=logging.INFO
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()]
 )

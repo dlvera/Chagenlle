@@ -22,10 +22,13 @@ async def authenticate_user(username: str, password: str, db: AsyncSession) -> U
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
-    to_encode.update({"exp": expire})
-    # Usar SECRET_KEY desde settings
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)  # ✅
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({
+        "exp": expire,
+        "user_id": data.get("user_id"),  # ✅ Nuevo campo
+        "sub": data.get("sub")
+    })
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],

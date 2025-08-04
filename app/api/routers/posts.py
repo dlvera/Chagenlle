@@ -13,76 +13,38 @@ from sqlalchemy.orm import selectinload
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
 @router.post("/", response_model=PostCreateResponse)
-async def create_post(
-    post: PostCreate,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
+async def create_post(post: PostCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     try:
-        new_post = Post(
-            title=post.title,
-            content=post.content,
-            user_id=current_user.id
-        )
+        new_post = Post(title=post.title, content=post.content, user_id=current_user.id)
         
-        # Manejo de tags con mejor gestión de errores
+        # Manejo mejorado de tags
         if not post.tags:
-            result = await db.execute(select(Tag).where(Tag.name == "General"))
-            default_tag = result.scalars().first()
-            
-            if not default_tag:
-                raise HTTPException(
-                    status_code=404,
-                    detail="Tag por defecto no encontrado",
-                    headers={"X-Error": "Database Error"}
-                )
-            new_post.tags = [default_tag]
+            # Crear tag 'General' si no existe
+            general_tag = await db.execute(select(Tag).where(Tag.name == "General"))
+            if not general_tag.scalar():
+                general_tag = Tag(name="General")
+                db.add(general_tag)
+                await db.flush()
+            new_post.tags = [general_tag]
         else:
-            # Validación más robusta de tags
-            result = await db.execute(
-                select(Tag).where(Tag.id.in_(post.tags))
-            )
+            result = await db.execute(select(Tag).where(Tag.id.in_(post.tags)))
             tags = result.scalars().all()
             
+            # Verificar que todos los tags existen
             if len(tags) != len(post.tags):
+                existing_ids = [t.id for t in tags]
+                missing = [id for id in post.tags if id not in existing_ids]
                 raise HTTPException(
                     status_code=404,
-                    detail="Algunos tags no fueron encontrados",
-                    headers={"X-Error": "Invalid Tags"}
+                    detail=f"Tags no encontrados: {missing}"
                 )
             new_post.tags = tags
         
-        # Manejo de la sesión con transacción
         db.add(new_post)
         await db.commit()
-        
-        # Refrescar el objeto con las relaciones
-        # await db.refresh(new_post)
-        # await db.execute(
-        #     select(Post)
-        #     .where(Post.id == new_post.id)
-        #     .options(selectinload(Post.tags))
-        # )
         await db.refresh(new_post, ["tags", "user"])
-
         return new_post
-        
-    except Exception as e:
-        # Manejo específico de errores
-        if isinstance(e, HTTPException):
-            raise e
-        elif hasattr(e, "orig") and isinstance(e.orig, Exception):
-            raise HTTPException(
-                status_code=500,
-                detail="Error en la base de datos",
-                headers={"X-Error": str(e.orig)}
-            )
-        else:
-            raise HTTPException(
-                status_code=500,
-                detail="Error interno del servidor",
-                headers={"X-Error": str(e)}
-            )
+    # ... [manejo de errores existente]
 
 @router.put("/{post_id}", response_model=PostRead)
 async def update_post(

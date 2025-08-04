@@ -25,19 +25,14 @@ class UserCreate(BaseModel):
 
     @field_validator('password')
     def validate_password(cls, value: str) -> str:
-        errors = []
         if len(value) < 10:
-            raise ValueError("La contraseña debe tener al menos 10 caracteres")
-        if not re.search(r'[A-Z]', value):
-            raise ValueError("La contraseña debe contener al menos una mayúscula")
-        if not re.search(r'[0-9]', value):
-            raise ValueError("La contraseña debe contener al menos un número")
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
-            raise ValueError("La contraseña debe contener al menos un carácter especial")
-        
-        if errors:
-            raise ValueError("\n".join(errors))
-        
+            raise ValueError("Password must be at least 10 characters")
+        if not any(c.isupper() for c in value):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.isdigit() for c in value):
+            raise ValueError("Password must contain at least one digit")
+        if not any(c in '!@#$%^&*(),.?":{}|<>' for c in value):
+            raise ValueError("Password must contain at least one special character")
         return value
     
 class UserResponse(BaseModel):
@@ -60,7 +55,7 @@ if TYPE_CHECKING:
     from .post import PostRead  # ✅
     from .comment import CommentRead  # ✅
   
-# UserRead.model_rebuild()  
+UserRead.model_rebuild()  
 class Token(BaseModel):
     access_token: str
     token_type: str

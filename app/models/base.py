@@ -52,13 +52,17 @@ class SoftDeleteMixin:
 #           QUERY PERSONALIZADO
 # ------------------------------------------
 class SoftDeleteQuery(Query):
-    """
-    Query personalizado para filtrar registros eliminados lógicamente por defecto
-    Filtra automáticamente registros no eliminados"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._query = self._query.filter(SoftDeleteMixin.deleted_at == None)  # ✅ Filtro activo
-        
+    _with_deleted = False
+    
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls)
+        if not obj._with_deleted:
+            obj = obj.filter(SoftDeleteMixin.deleted_at == None)
+        return obj
+    
+    def with_deleted(self):
+        self._with_deleted = True
+        return self
         
 # ------------------------------------------
 #          TABLA DE ASOCIACIÓN

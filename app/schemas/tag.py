@@ -30,8 +30,10 @@ class TagRead(TagBase):
         from .post import PostRead
         posts: list["PostRead"] = [] 
     model_config = ConfigDict(from_attributes=True)
-
+    posts: list["PostRead"] = []
+    
 if TYPE_CHECKING:
     from .post import PostRead  # ✅ Importación diferida
 
+from app.schemas.post import PostRead
 TagRead.model_rebuild()  # ✅ Reconstruir el modelo

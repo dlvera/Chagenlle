@@ -161,11 +161,7 @@ async def delete_Commet(
     return {"message": "Comment deleted successfully"}
 
 @router.get("/", response_model=List[CommentRead])
-async def read_comments(
-    skip: int = 0,
-    limit: int = 10,
-    db: AsyncSession = Depends(get_db)
-):
+async def read_comments(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Comment)
         .where(Comment.deleted_at == None)
@@ -173,11 +169,11 @@ async def read_comments(
         .offset(skip)
         .limit(limit)
         .options(
-            selectinload(Comment.user),
-            selectinload(Comment.post)
-                .selectinload(Post.user)
-                .selectinload(Post.tags),  # ✅ Cargar tags del post
-)
+            selectinload(Comment.user),  # Solo cargar usuario necesario
+            selectinload(Comment.post).options(
+                selectinload(Post.user)  # Usuario del post
+            )
+        )
     )
     comments = result.scalars().unique().all()
     return comments

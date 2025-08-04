@@ -21,7 +21,7 @@ async def register(
     )
     if result.scalars().first():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,  # Mejor código para conflictos
+            status_code=status.HTTP_409_CONFLICT,
             detail="Username already registered"
         )
     
@@ -50,5 +50,10 @@ async def create_user(
     service = UserService(db)
     try:
         return await service.create_user(user_data)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
